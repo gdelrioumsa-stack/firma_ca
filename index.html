@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pie de Correo - Censo Agropecuario</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      max-width: 600px;
+      width: 95%;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2e7d32;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #444;
+      font-size: 14px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: #2e7d32;
+      box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+    }
+
+    button {
+      background: #2e7d32;
+      color: white;
+      border: none;
+      padding: 14px 24px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: block;
+      width: 100%;
+      margin-top: 20px;
+      font-weight: 600;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    button:hover {
+      background: #1b5e20;
+      transform: translateY(-1px);
+    }
+
+    canvas {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>✨ Generador de Pie de Correo</h1>
+    <p class="subtitle">Crea tu firma institucional en un clic — ideal para correos oficiales del censo.</p>
+
+    <form id="formulario">
+      <div class="form-group">
+        <label for="nombre">Nombre completo</label>
+        <input type="text" id="nombre" placeholder="Ej: Cristian Castillo Félix" required>
+      </div>
+      <div class="form-group">
+        <label for="cargo">Cargo</label>
+        <input type="text" id="cargo" placeholder="Ej: Gerente Nacional de Operaciones de Campo" required>
+      </div>
+      <div class="form-group">
+        <label for="area">Área</label>
+        <input type="text" id="area" placeholder="Ej: Cartografía" required>
+      </div>
+      <div class="form-group">
+        <label for="celular">Celular</label>
+        <input type="text" id="celular" placeholder="Ej: 77777777" required>
+      </div>
+      <div class="form-group">
+        <label for="email">Correo electrónico</label>
+        <input type="text" id="email" placeholder="Ej: nombre@censo.gob.bo" required>
+      </div>
+
+      <button type="button" onclick="generarPie()">📥 Generar Pie de Correo</button>
+    </form>
+  </div>
+
+  <!-- Canvas oculto -->
+  <canvas id="canvas"></canvas>
+
+  <!-- Librería para guardar archivos -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+  <!-- Script principal -->
+  <script>
+    function generarPie() {
+        const nombre = document.getElementById('nombre').value.trim();
+        const cargo = document.getElementById('cargo').value.trim();
+        const area = document.getElementById('area').value.trim();
+        const celular = document.getElementById('celular').value.trim();
+        const email = document.getElementById('email').value.trim();
+
+        if (!nombre || !cargo || !area || !celular || !email) {
+            alert("⚠️ Por favor, complete todos los campos.");
+            return;
+        }
+
+        generarPNG(nombre, cargo, area, celular, email);
+        document.getElementById('formulario').reset();
+    }
+
+    function generarPNG(nombre, cargo, area, celular, email) {
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const scale = 2;
+        const width = 600;
+        const height = 120; // Ajustado a altura del texto + logo
+
+        canvas.width = width * scale;
+        canvas.height = height * scale;
+        ctx.scale(scale, scale);
+
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, width, height);
+
+        const logo = new Image();
+        logo.src = 'logo.png';
+
+        logo.onload = function() {
+            // Altura del logo ajustada al bloque de texto (80 px)
+            const logoHeight = 80;
+            const logoWidth = (logo.width / logo.height) * logoHeight;
+            const logoY = (height - logoHeight) / 2;
+
+            ctx.drawImage(logo, 10, logoY, logoWidth, logoHeight);
+
+            // Línea vertical separadora
+            const lineaX = 10 + logoWidth + 10;
+            ctx.beginPath();
+            ctx.moveTo(lineaX, 10);
+            ctx.lineTo(lineaX, height - 10);
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#ccc';
+            ctx.stroke();
+
+            // Texto
+            const textStartX = lineaX + 15;
+            const lineHeight = 16; // Interlineado ligeramente mayor para legibilidad
+            let y = 25;
+
+            // Nombre
+            ctx.font = 'bold 16px Arial';
+            ctx.fillStyle = '#333';
+            ctx.fillText(nombre, textStartX, y);
+            y += lineHeight + 2;
+
+            // Cargo con barra vertical de énfasis
+            ctx.font = 'bold 14px Arial';
+            ctx.fillStyle = '#2e7d32';
+            const barraX = textStartX - 8;
+            const barraWidth = 3;
+            const barraHeight = 14;
+            const barraY = y - 12;
+            ctx.fillRect(barraX, barraY, barraWidth, barraHeight);
+            ctx.fillText(cargo, textStartX, y);
+            y += lineHeight + 2;
+
+            // Área
+            ctx.fillStyle = '#333';
+            ctx.font = '14px Arial';
+            ctx.fillText("Área: " + area.replace(/^Área:\s*/i, ""), textStartX, y);
+            y += lineHeight + 2;
+
+            // Celular
+            ctx.fillText("Cel. " + celular.replace(/^Cel\.\s*/, ""), textStartX, y);
+            y += lineHeight + 2;
+
+            // Email
+            ctx.fillStyle = '#4a4aff';
+            ctx.fillText("E-mail: " + email.replace(/^E\-mail:\s*/, ""), textStartX, y);
+
+            // Descargar PNG
+            canvas.toBlob(function(blob) {
+                saveAs(blob, `${nombre.replace(/\s+/g, '_')}_pie_correo_HD.png`);
+            }, 'image/png', 1.0);
+        };
+
+        logo.onerror = function() {
+            alert("⚠️ No se pudo cargar el logo. Asegúrate de que 'logo.png' esté en la misma carpeta que este archivo.");
+        };
+    }
+  </script>
+</body>
+</html>
